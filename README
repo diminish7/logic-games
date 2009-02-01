@@ -1,0 +1,15 @@
+Here's an example of the type of problem this application will try to solve (pulled from an old LSAT):
+
+    Seven consecutive time slots for a broadcast, numbered in chronological order 1 through 7, will be filled by six song tapes - G, H, L, O, P, S - and exactly one news tape. Each tape is to be assigned to a different time slot, and no tape is longer than any other tape. The broadcast is subject to the following restrictions:
+
+        * L must be played immediately before O
+        * The news tape must be played at some time after L
+        * There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
+
+    If G is played second, which one of the following tapes must be played third?
+
+        * The news
+        * H
+        * L
+        * O
+        * S
