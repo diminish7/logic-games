@@ -34,4 +34,58 @@ describe "ClauseCluster" do
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
   
+  describe "evaluate(rule_base)" do
+    before(:each) do
+      @rule_base = RuleBase.new
+      @fact1 = Fact.new
+      @fact1.entity = @obj.lhs.entity
+      @fact1.property = @obj.lhs.property
+      @fact2 = Fact.new
+      @fact2.entity = @obj.rhs.entity
+      @fact2.property = @obj.rhs.property
+      @rule_base.add_fact(@fact1)
+      @rule_base.add_fact(@fact2)
+    end
+    
+    it "should return UNKNOWN if lhs or rhs are UNKNOWN" do
+      @obj.evaluate(@rule_base).should == Rule::UNKNOWN
+    end
+    describe "operator is OR" do
+      before(:each) do
+        @obj.operator = ClauseCluster::OR
+      end
+      it "should return TRUE if either lhs or rhs are TRUE" do
+        @fact1.property_value = @obj.lhs.property_value
+        @fact1.comparator = @obj.lhs.comparator
+        @obj.evaluate(@rule_base).should == Rule::TRUE
+      end
+      it "should return FALSE if both lhs or rhs are FALSE" do
+        @fact1.property_value = @obj.lhs.property_value
+        @fact1.comparator = Clause::EQUAL
+        @fact2.property_value = @obj.rhs.property_value
+        @fact2.comparator = Clause::NOT_EQUAL
+        @obj.evaluate(@rule_base).should == Rule::FALSE
+      end
+    end
+    describe "operator is AND" do
+      before(:each) do
+        @obj.operator = ClauseCluster::AND
+      end
+      it "should return TRUE if both lhs and rhs are TRUE" do
+        @fact1.property_value = @obj.lhs.property_value
+        @fact1.comparator = Clause::NOT_EQUAL
+        @fact2.property_value = @obj.rhs.property_value
+        @fact2.comparator = Clause::EQUAL
+        @obj.evaluate(@rule_base).should == Rule::TRUE
+      end
+      it "should return FALSE if either lhs or rhs are FALSE" do
+        @fact1.property_value = @obj.lhs.property_value
+        @fact1.comparator = Clause::EQUAL
+        @fact2.property_value = @obj.rhs.property_value
+        @fact2.comparator = Clause::EQUAL
+        @obj.evaluate(@rule_base).should == Rule::FALSE
+      end
+    end
+  end
+  
 end

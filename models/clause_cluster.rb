@@ -20,6 +20,23 @@ class ClauseCluster
   polymorphic :lhs => [:Clause, :ClauseCluster], :rhs => [:Clause, :ClauseCluster]
   enumerated :operator => [AND, OR]
   
+  #Evaluate the truth of a clause cluster within a rule base
+  def evaluate(rule_base)
+    left_side = lhs.evaluate(rule_base)
+    right_side = rhs.evaluate(rule_base)
+    if self.operator == AND
+      #Return true if both lhs and rhs are true
+      return Rule::TRUE if left_side == Rule::TRUE && right_side == Rule::TRUE
+      return Rule::FALSE if left_side == Rule::FALSE || right_side == Rule::FALSE
+      return Rule::UNKNOWN
+    else  #OR
+      #Return true if either lhs or rhs are true
+      return Rule::TRUE if left_side == Rule::TRUE || right_side == Rule::TRUE
+      return Rule::FALSE if left_side == Rule::FALSE && right_side == Rule::FALSE
+      return Rule::UNKNOWN
+    end
+  end
+  
   #Formatted, readable string representing the clause cluster
   def readable
     "#{ lhs.readable } #{ operator } #{ rhs.readable }"

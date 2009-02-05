@@ -4,7 +4,7 @@ describe "RuleBase" do
   before(:all) do
     @required = [:name]
     @typed = {:name => String}
-    @typed_collections = {:facts => Fact, :rules => Rule}
+    @typed_collections = {:rules => Rule}
     
     @readable = "Rules:\nIF Property1 of Entity1 DOES NOT EQUAL Value1 AND Property2 of Entity2 EQUALS Value2 THEN Property3 of Entity3 EQUALS Value3\nFacts:\nProperty4 of Entity4 EQUALS Value4"
   end
@@ -57,10 +57,72 @@ describe "RuleBase" do
     fact.property.name = "Property4"
     fact.entity.name = "Entity4"
     
-    @obj.facts = [fact]
+    @obj.add_fact(fact)
   end
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  
+  describe "facts_for(entity, property)" do
+    before(:each) do
+      @fact = @obj.all_facts.first
+      @entity = @fact.entity
+      @property = @fact.property
+    end
+    
+    it "should return empty if their are no rules for the entity" do
+      @obj.facts_for(Entity.new, @property).should == []
+    end
+    
+    it "should return empty if their are no rules for the property" do
+      @obj.facts_for(@entity, Property.new).should == []
+    end
+    
+    it "should return a fact if one exists" do
+      facts = @obj.facts_for(@entity, @property)
+      facts.should be_a_kind_of Array
+      facts.length.should == 1
+      facts.first.should == @fact
+    end
+  end
+  
+  describe "evaluate()" do
+    before(:each) do
+      rule = @obj.rules.first
+      @fact1 = Fact.new
+      @fact1.comparator = Clause::NOT_EQUAL
+      @fact1.property_value = "Value1"
+      @fact1.property = rule.antecedent.lhs.property
+      @fact1.entity = rule.antecedent.lhs.entity
+      @fact2 = Fact.new
+      @fact2.comparator = Clause::EQUAL
+      @fact2.property_value = "Value2"
+      @fact2.property = rule.antecedent.rhs.property
+      @fact2.entity = rule.antecedent.rhs.entity
+    end
+    it "should not generate any facts if no rules can be fired" do
+      @obj.rules.each {|rule| rule.fired?.should == false}
+      @obj.facts.length.should == 1
+      @obj.evaluate
+      @obj.rules.each {|rule| rule.fired?.should == false}
+      @obj.facts.length.should == 1
+    end
+    it "should generate facts from other facts" do
+      @obj.add_fact(@fact1)
+      @obj.add_fact(@fact2)
+      @obj.rules.each {|rule| rule.fired?.should == false}
+      @obj.facts.length.should == 3
+      @obj.evaluate
+      @obj.facts.length.should == 4
+    end
+    it "should fire all possible rules" do
+      @obj.add_fact(@fact1)
+      @obj.add_fact(@fact2)
+      @obj.rules.each {|rule| rule.fired?.should == false}
+      @obj.facts.length.should == 3
+      @obj.evaluate
+      @obj.rules.each {|rule| rule.fired?.should == true}
+    end
+  end
   
 end

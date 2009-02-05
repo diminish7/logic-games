@@ -13,23 +13,50 @@ class RuleBase
   #Validations
   required :name
   typed :name => :String
-  typed_collection :facts => :Fact, :rules => :Rule
+  typed_collection :rules => :Rule
   
-  #Returns the facts from this rule base for a given object.
-  # obj can be of type Entity, Property or EntityProperty
-  def facts_for(obj)
-    #TODO
+  def initialize(name = nil)
+    @name = name
+    @facts = {}
+    @rules = []
   end
   
-  #Returns the rules from this rule base for a given object.
-  # obj can be of type Entity, Property or EntityProperty
-  def rules_for(obj)
-    #TODO
+  #Forward chains to generate as many facts as possible given the initial knowledge
+  def evaluate
+    made_discovery = true
+    while made_discovery do
+      made_discovery = false
+      self.rules.each do |rule|
+        unless rule.fired?
+          rule.evaluate
+          made_discovery = made_discovery || rule.fired?
+        end
+      end
+    end
+  end
+  
+  #Adds a fact to this rule base's fact hash
+  def add_fact(fact)
+    @facts[fact.entity] = {} unless @facts.has_key?(fact.entity)
+    @facts[fact.entity][fact.property] = [] unless @facts[fact.entity].has_key?(fact.property)
+    @facts[fact.entity][fact.property] << fact
+  end
+  
+  #Returns the facts from this rule base for a given object.
+  # obj can be of type Entity or Property
+  def facts_for(entity, property)
+    return [] if @facts[entity].nil? || @facts[entity][property].nil?
+    return @facts[entity][property]
+  end
+  
+  #Get all facts as an array
+  def all_facts
+    @facts.values.collect { |property_facts| property_facts.values }.flatten
   end
   
   #Formatted, readable string representing the rule base
   def readable
-    "Rules:\n#{rules.collect {|r| r.readable }.join('\n')}\nFacts:\n#{facts.collect {|f| f.readable }.join('\n')}"
+    "Rules:\n#{rules.collect {|r| r.readable }.join('\n')}\nFacts:\n#{all_facts.collect {|f| f.readable }.join('\n')}"
   end
   
 end
