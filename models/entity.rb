@@ -1,7 +1,6 @@
 #Representation of an entity/object with variable properties
 # Properties:
 #   - name
-#   - entity_properties (join table for n:m)
 #   - properties
 class Entity
   include Validatable

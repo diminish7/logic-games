@@ -88,4 +88,30 @@ describe "ClauseCluster" do
     end
   end
   
+  describe "entities()" do
+    it "should contain the list of entities from the clauses" do
+      entities = @obj.entities
+      entities.length.should == 2
+      entities.include?(@obj.lhs.entity).should == true
+      entities.include?(@obj.rhs.entity).should == true
+    end
+    it "should not duplicate entities" do
+      cc = ClauseCluster.new
+      cc.operator = ClauseCluster::AND
+      cc.lhs = @obj
+      cc.rhs = Clause.new
+      
+      cc.rhs.comparator = Clause::EQUAL
+      cc.rhs.property_value = "Value2"
+      cc.rhs.property = Property.new
+      cc.rhs.property.name = "Property3"
+      cc.rhs.entity = cc.lhs.rhs.entity
+      
+      entities = cc.entities
+      entities.length.should == 2
+      entities.include?(@obj.lhs.entity).should == true
+      entities.include?(@obj.rhs.entity).should == true
+    end
+  end
+  
 end

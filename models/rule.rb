@@ -52,6 +52,16 @@ class Rule
     self.rule_base.add_fact(fact)
   end
   
+  #Get a collection of all unique entities from all clauses in this rule
+  def entities
+    if antecedent.kind_of?(Clause)
+      [antecedent.entity, consequent.entity].uniq
+    else
+      #Antecedent is a clause cluster
+      (antecedent.entities + [consequent.entity]).uniq
+    end
+  end
+  
   #Formatted, readable string representing the clause cluster
   def readable
     "IF #{ antecedent.readable } THEN #{ consequent.readable }"

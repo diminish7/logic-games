@@ -40,6 +40,13 @@ class RuleBase
     @facts[fact.entity] = {} unless @facts.has_key?(fact.entity)
     @facts[fact.entity][fact.property] = [] unless @facts[fact.entity].has_key?(fact.property)
     @facts[fact.entity][fact.property] << fact
+    puts "Adding fact: #{fact.readable}"
+  end
+  
+  #Adds a rule to this rule_base
+  def add_rule(rule)
+    @rules << rule
+    puts "Adding rule: #{rule.readable}"
   end
   
   #Returns the facts from this rule base for a given object.

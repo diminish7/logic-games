@@ -37,6 +37,13 @@ class ClauseCluster
     end
   end
   
+  #Get a list of all entities from all clauses
+  def entities
+    left_entities = lhs.kind_of?(Clause) ? [lhs.entity] : lhs.entities
+    right_entities = rhs.kind_of?(Clause) ? [rhs.entity] : rhs.entities
+    (left_entities + right_entities).uniq
+  end
+  
   #Formatted, readable string representing the clause cluster
   def readable
     "#{ lhs.readable } #{ operator } #{ rhs.readable }"

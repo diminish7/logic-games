@@ -56,6 +56,8 @@ describe "Clause" do
       @fact1.entity = @obj.entity
       @fact1.property = @obj.property
       @fact2 = Fact.new
+      @fact2.entity = Entity.new
+      @fact2.property = Property.new
     end
     
     it "should return UNKNOWN if none of the facts applies" do

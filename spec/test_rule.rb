@@ -47,6 +47,16 @@ describe "Rule" do
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
   
+  describe "entities" do
+    it "should return a list of unique entities from all clauses" do
+      entities = @obj.entities
+      entities.length.should == 3
+      [@obj.antecedent.lhs.entity, @obj.antecedent.rhs.entity, @obj.consequent.entity].each do |entity|
+        entities.include?(entity).should == true
+      end
+    end
+  end
+  
   describe "fired?()" do
     it "should initialize to false" do
       rule = Rule.new
@@ -67,7 +77,6 @@ describe "Rule" do
     end
   end
   
-  #TODO
   describe "evaluate()" do
     describe "Antecedent is TRUE" do
       before(:each) do
