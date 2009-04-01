@@ -22,5 +22,19 @@ describe "Fact" do
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  it_should_behave_like "Clonable"
+  
+  describe "compare(other)" do
+    it "should return true iff the other fact is a match" do
+      other = Fact.new
+      other.comparator = Clause::NOT_EQUAL
+      other.property_value = @obj.property_value
+      other.property = @obj.property
+      other.entity = @obj.entity
+      @obj.compare(other).should == false
+      other.comparator = Clause::EQUAL
+      @obj.compare(other).should == true
+    end
+  end
   
 end

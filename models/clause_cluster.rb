@@ -48,4 +48,13 @@ class ClauseCluster
   def readable
     "#{ lhs.readable } #{ operator } #{ rhs.readable }"
   end
+  
+  #Return a new clause cluster that is a clone of the current clause cluster
+  def clone
+    clause_cluster = ClauseCluster.new
+    clause_cluster.lhs = self.lhs.clone
+    clause_cluster.rhs = self.rhs.clone
+    clause_cluster.operator = self.operator
+    return clause_cluster
+  end
 end

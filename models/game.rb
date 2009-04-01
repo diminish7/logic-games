@@ -6,8 +6,7 @@ class Game
   
   required :rule_base, :name, :description, :questions
   typed :rule_base => :RuleBase, :description => :String, :name => :String
-  #TODO: Should questions be a class?
-  typed_collection :questions => :String
+  typed_collection :questions => :Question
   
   def initialize(name = nil, description = nil, questions = nil, rule_base = nil)
     @name = name
@@ -80,10 +79,43 @@ class Game
       end
     end
   end
+  #Add last available value rules
+  def add_last_available_value_rules(entities, property, values)
+    entities.each do |entity|
+      values.each do |value|
+        clauses = []
+        values.each do |other|
+          unless value == other
+            clause = Clause.new
+            clause.entity = entity
+            clause.property = property
+            clause.property_value = other
+            clause.comparator = Clause::NOT_EQUAL
+            clauses << clause
+          end
+        end
+        #Create an AND'd clause cluster
+        antecedent = create_cluster_from_clauses(clauses, ClauseCluster::AND)
+        #Create the consequent
+        consequent = Clause.new
+        consequent.entity = entity
+        consequent.property = property
+        consequent.property_value = value
+        consequent.comparator = Clause::EQUAL
+        #Create and add the rule
+        rule = Rule.new
+        rule.rule_base = self.rule_base
+        rule.antecedent = antecedent
+        rule.consequent = consequent
+        #Add to the game (and rule_base)
+        self.add_rule(rule)
+      end
+    end
+  end
   
   #Return the name, description and questions
   def readable
-    "\n#{self.name}:\n\n#{self.description}\n\nQuestions:\n#{self.questions.join("\n\n")}"
+    "\n#{self.name}:\n\n#{self.description}\n\nQuestions:\n#{self.questions.collect {|q| q.readable}.join("\n\n")}"
   end
   
 protected
@@ -99,5 +131,16 @@ protected
     @rule_base.facts.keys.each do |entity|
       @entities[entity.name] ||= entity
     end
+  end
+  
+  #Create a clause cluster from a set of clauses
+  def create_cluster_from_clauses(clauses, operator)
+    return nil if clauses.empty?  #This shouldn't happen...
+    return clauses.first if clauses.length == 1 #Recursion stop case
+    lhs = clauses.shift   #Pop the first clause
+    cluster = ClauseCluster.new
+    cluster.lhs = lhs
+    cluster.operator = operator
+    cluster.rhs = create_cluster_from_clauses(clauses, operator)
   end
 end

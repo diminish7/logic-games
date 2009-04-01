@@ -1,5 +1,6 @@
 #Set up game description
 game = Game.new("Broadcast")
+game.rule_base = RuleBase.new
 game.description = <<DESC
 Seven consecutive time slots for a broadcast, numbered in chronological order 1 through 7, will be filled by six song tapes - G, H, L, O, P, S - and exactly one news tape. Each tape is to be assigned to a different time slot, and no tape is longer than any other tape. The broadcast is subject to the following restrictions:
 
@@ -7,18 +8,6 @@ Seven consecutive time slots for a broadcast, numbered in chronological order 1 
     * The news tape must be played at some time after L
     * There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
 DESC
-game.questions = []
-game.questions << <<QUESTIONS
-If G is played second, which one of the following tapes must be played third?
-
-    * The news
-    * H
-    * L
-    * O
-    * S
-QUESTIONS
-#Display game
-puts game.readable
 
 #Set up the entities
 position_property = Property.new
@@ -31,13 +20,48 @@ position_property.name = "Position"
   game.entities[name] = entity
 end
 
-#Create the rules and facts
-game.rule_base = RuleBase.new
+#Create the questions
+game.questions = []
+q = Question.new
+q.text = "If G is played second, which one of the following tapes must be played third?"
+q.rule_base = game.rule_base
+q.type = Question::DETERMINE_TRUTH
+#New facts
+fact = Fact.new
+fact.rule_base = game.rule_base
+fact.comparator = Fact::EQUAL
+fact.entity = game.entities["G"]
+fact.property = position_property
+fact.property_value = 2
+q.new_facts = [fact]
+q.options = []
+#Options
+["News", "H", "L", "O", "S"].each do |name|
+  option = Option.new
+  fact = Fact.new
+  fact.rule_base =game.rule_base
+  fact.comparator = Fact::EQUAL
+  fact.entity = game.entities[name]
+  fact.property = position_property
+  fact.property_value = 3
+  option.facts = [fact]
+  q.options << option
+end
+game.questions << q
 
-#General rules: mutual exclusion
+#Display game
+puts game.readable
+
+#Create the rules and facts
+
+#General rules: 
+#Mutual exclusion
 # - If G is in position 1, then H, L, O, P, S and News are NOT in position 1
 # - etc...
 game.add_mutual_exclusion_rules(game.entities.values, position_property, [1, 2, 3, 4, 5, 6, 7])
+#Last available value
+# - If G is not in positions 1, 2, 3, 4, 5, or 6, then it must be in position 7
+game.add_last_available_value_rules(game.entities.values, position_property, [1, 2, 3, 4, 5, 6, 7])
 
 #Rules and facts for "L must be played immediately before O"
 #Facts: 
@@ -119,4 +143,14 @@ end
 #Generate whatever facts we can
 game.rule_base.evaluate
 
-#TODO: solve for questions (NOTE: need a new class to represent question with new facts and possible answers.  Adding facts shouldn't change the main rulebase)
+#Now evaluate the questions
+game.questions.each do |question|
+  puts "Evaluating question #{question.readable}"
+  answer = question.evaluate
+  if answer
+    puts "Answer:"
+    puts answer.readable
+  else
+    puts "Could not answer the question..."
+  end
+end

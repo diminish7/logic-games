@@ -46,6 +46,7 @@ describe "Rule" do
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  it_should_behave_like "Clonable"
   
   describe "entities" do
     it "should return a list of unique entities from all clauses" do

@@ -21,6 +21,7 @@ describe "Clause" do
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  it_should_behave_like "Clonable"
   
   describe "applies(fact)" do
     it "should return true if the fact matches the clause" do

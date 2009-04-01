@@ -42,4 +42,14 @@ class Clause
     "#{ property.readable } of #{ entity.readable } #{ comparator } #{ property_value }"
   end
   
+  #Return a new clause that is a clone of the current clause
+  def clone
+    clause = Clause.new
+    clause.comparator = self.comparator
+    clause.property_value = self.property_value
+    clause.property = self.property
+    clause.entity = self.entity
+    return clause
+  end
+  
 end

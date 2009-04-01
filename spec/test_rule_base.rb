@@ -62,6 +62,7 @@ describe "RuleBase" do
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  it_should_behave_like "Clonable"
   
   describe "facts_for(entity, property)" do
     before(:each) do

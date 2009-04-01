@@ -33,6 +33,7 @@ describe "ClauseCluster" do
   
   it_should_behave_like "Validatable"
   it_should_behave_like "Readable"
+  it_should_behave_like "Clonable"
   
   describe "evaluate(rule_base)" do
     before(:each) do

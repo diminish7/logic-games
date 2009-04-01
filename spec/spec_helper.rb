@@ -96,6 +96,15 @@ describe "Readable", :shared => true do
   end
 end
 
+describe "Clonable", :shared => true do
+  it "should create a new instance" do
+    (@obj == @obj.clone).should == false
+  end
+  it "should create a clone of the original" do
+    (@obj.readable == @obj.clone.readable).should == true
+  end
+end
+
 #Helpers
 def get_accessors_and_value(field, obj)
   #Return getter and setter

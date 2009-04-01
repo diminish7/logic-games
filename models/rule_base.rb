@@ -66,4 +66,21 @@ class RuleBase
     "Rules:\n#{rules.collect {|r| r.readable }.join('\n')}\nFacts:\n#{all_facts.collect {|f| f.readable }.join('\n')}"
   end
   
+  #Create a new rule base with all the same rules and facts
+  def clone
+    rule_base = RuleBase.new(self.name)
+    #Clone the facts
+    self.facts.each do |entity, properties|
+      rule_base.facts[entity] = {}
+      properties.each do |property, value|
+        rule_base.facts[entity][property] = value.collect {|fact| fact.clone(rule_base)}
+      end
+    end
+    #Clone the rules
+    self.rules.each do |rule|
+      rule_base.rules << rule.clone(rule_base)
+    end
+    return rule_base
+  end
+  
 end

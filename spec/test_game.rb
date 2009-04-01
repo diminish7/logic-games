@@ -4,8 +4,8 @@ describe "Game" do
   before(:all) do
     @required = [:rule_base, :name, :description, :questions]
     @typed = {:rule_base => RuleBase, :name => String, :description => String}
-    @typed_collections = {:questions => String}    
-    @readable = "\nTest Game:\n\nTest Description\n\nQuestions:\nQuestion 1\n\nQuestion 2"
+    @typed_collections = {:questions => Question}    
+    @readable = "\nTest Game:\n\nTest Description\n\nQuestions:\nTest Question\n\nProperty0 of Entity0 EQUALS Value0\nProperty1 of Entity1 EQUALS Value1"
   end
   
   before(:each) do
@@ -58,8 +58,27 @@ describe "Game" do
     fact.entity.name = "Entity4"
     
     rule_base.add_fact(fact)
+    
+    question = Question.new
+    question.text = "Test Question"
+    question.type = Question::DETERMINE_TRUTH
+    question.rule_base = RuleBase.new
+    question.options = []
+    2.times do |i|
+      option = Option.new
+      fact = Fact.new
+      fact.comparator = Clause::EQUAL
+      fact.property_value = "Value#{i}"
+      fact.property = Property.new
+      fact.entity = Entity.new
+      fact.rule_base = RuleBase.new
+      fact.property.name = "Property#{i}"
+      fact.entity.name = "Entity#{i}"
+      option.facts = [fact]
+      question.options << option
+    end
     #Now create a game from the rule base
-    @obj = Game.new("Test Game", "Test Description", ["Question 1", "Question 2"], rule_base)
+    @obj = Game.new("Test Game", "Test Description", [question], rule_base)
   end
   
   it_should_behave_like "Validatable"

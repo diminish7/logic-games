@@ -66,4 +66,13 @@ class Rule
   def readable
     "IF #{ antecedent.readable } THEN #{ consequent.readable }"
   end
+  
+  #Return a new rule that is a clone of the current rule
+  def clone(cloned_rule_base = nil)
+    rule = Rule.new
+    rule.rule_base = cloned_rule_base || self.rule_base #Usually a rule will be cloned because the rule base is being cloned
+    rule.consequent = self.consequent.clone
+    rule.antecedent = self.antecedent.clone
+    return rule
+  end
 end
