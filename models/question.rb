@@ -26,7 +26,7 @@ class Question
       options.each do |option|
         return option if option.facts.all? do |fact|
           matchers = rb.facts[fact.entity] ? rb.facts[fact.entity][fact.property] : nil
-          matchers && matchers.all? {|matcher| fact.compare(matcher)}
+          matchers && matchers.any? {|matcher| fact.compare(matcher)}
         end
       end
     elsif type == DETERMINE_POSSIBLE

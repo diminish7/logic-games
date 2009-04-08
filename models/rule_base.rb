@@ -25,11 +25,12 @@ class RuleBase
   def evaluate
     made_discovery = true
     while made_discovery do
-      made_discovery = false
-      self.rules.each do |rule|
-        unless rule.fired?
+      made_discovery = self.rules.any? do |rule|
+        if rule.fired?
+          false
+        else
           rule.evaluate
-          made_discovery = made_discovery || rule.fired?
+          rule.fired?
         end
       end
     end
@@ -39,14 +40,20 @@ class RuleBase
   def add_fact(fact)
     @facts[fact.entity] = {} unless @facts.has_key?(fact.entity)
     @facts[fact.entity][fact.property] = [] unless @facts[fact.entity].has_key?(fact.property)
+    @facts[fact.entity][fact.property].each do |existing|
+      if (fact.comparator == Fact::EQUAL && existing.comparator == Fact::EQUAL && fact.property_value != existing.property_value) ||
+            (existing.comparator != fact.comparator && existing.property_value == fact.property_value)
+        raise "Adding a contradictory fact!"
+      end
+    end
     @facts[fact.entity][fact.property] << fact
-    puts "Adding fact: #{fact.readable}"
+    LOGGER.info "Adding fact: #{fact.readable}"
   end
   
   #Adds a rule to this rule_base
   def add_rule(rule)
     @rules << rule
-    puts "Adding rule: #{rule.readable}"
+    LOGGER.info "Adding rule: #{rule.readable}"
   end
   
   #Returns the facts from this rule base for a given object.

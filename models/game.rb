@@ -79,6 +79,18 @@ class Game
       end
     end
   end
+  #Add one place at a time rules
+  def add_one_place_at_a_time_rules(entities, property, values)
+    #For an entity, if property == value, then property != any other value
+    entities.each do |entity|
+      values.each do |value|
+        values.each do |other|
+          next if other == value
+          self.create_rule(entity, property, Clause::EQUAL, value, entity, property, Clause::NOT_EQUAL, other)
+        end
+      end
+    end
+  end
   #Add last available value rules
   def add_last_available_value_rules(entities, property, values)
     entities.each do |entity|
@@ -142,5 +154,6 @@ protected
     cluster.lhs = lhs
     cluster.operator = operator
     cluster.rhs = create_cluster_from_clauses(clauses, operator)
+    return cluster
   end
 end
