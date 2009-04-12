@@ -54,6 +54,32 @@ class Game
     end
   end
   
+  #Create a compound rule
+  def create_compound_rule(antecedent_entity, antecedent_property, antecedent_comparator, antecedent_values, boolean_operator, consequent_entity, consequent_property, consequent_comparator, consequent_value)
+    clauses = []
+    antecedent_values.each do |antecedent_value|
+      clause = Clause.new
+      clause.entity = antecedent_entity
+      clause.property = antecedent_property
+      clause.property_value = antecedent_value
+      clause.comparator = antecedent_comparator
+      clauses << clause
+    end
+    antecedent = create_cluster_from_clauses(clauses, boolean_operator)
+    consequent = Clause.new
+    consequent.entity = consequent_entity
+    consequent.property = consequent_property
+    consequent.property_value = consequent_value
+    consequent.comparator = consequent_comparator
+    #Create and add the rule
+    rule = Rule.new
+    rule.rule_base = self.rule_base
+    rule.antecedent = antecedent
+    rule.consequent = consequent
+    #Add to the game (and rule_base)
+    self.add_rule(rule)
+  end
+  
   #Create a fact and add it to the rule base
   def create_fact(entity, property, comparator, value)
     fact = Fact.new
@@ -92,6 +118,7 @@ class Game
     end
   end
   #Add last available value rules
+  #TODO: refactor this to use create_compound_rule()
   def add_last_available_value_rules(entities, property, values)
     entities.each do |entity|
       values.each do |value|
