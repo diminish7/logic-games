@@ -12,7 +12,7 @@ class Game
     @name = name
     @description = description
     @questions = questions
-    @rule_base = rule_base
+    @rule_base = rule_base || RuleBase.new
     initialize_entities(@rule_base)
   end
   

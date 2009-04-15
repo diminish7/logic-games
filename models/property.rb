@@ -13,4 +13,8 @@ class Property
   
   #Alias name as readable to conform to readable interface
   alias :readable :name
+  
+  def initialize(name)
+    @name = name
+  end
 end
