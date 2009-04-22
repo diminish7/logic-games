@@ -31,5 +31,44 @@ module Language
       game.add_one_place_at_a_time_rules(entities, property, positions)
     end
     
+    #Position-specific rules
+    def new_rule(entity1, description, entity2, modifier = nil)
+      if description == :before
+        position_rule(entity1, entity2, modifier)
+      elsif description == :after
+        position_rule(entity2, entity1, modifier)
+      end
+    end
+    
+    def position_rule(first_entity, second_entity, distance = nil)
+      first_entity = entity_called(first_entity) if first_entity.kind_of?(String)
+      second_entity = entity_called(second_entity) if second_entity.kind_of?(String)
+      if distance.nil?
+        #TODO
+        
+      else
+        # Facts:
+        #   - second entity can't be in positions 1 through distance
+        #   - first entity can't be in positions last down to last - distance
+        1.upto(distance) do |position|
+          game.create_fact(second_entity, property_called("Position"), Fact::NOT_EQUAL, position)
+          game.create_fact(first_entity, property_called("Position"), Fact::NOT_EQUAL, positions.length-position+1)
+        end
+        # Rules:
+        #   - for positions 1 through size-distance, if first entity is in position, then second entity is in position + distance
+        #     and if first entity is NOT in position, then second entity is NOT in position + distance
+        #   - for positions distance through size, if second entity is in position, then first entity is in position - distance
+        #     and if second entity is NOT in position then first entity is NOT in position - distance
+        (positions.length - distance).times do |i|
+          first_position = i+1
+          second_position = first_position + distance
+          game.create_rule(second_entity, property_called("Position"), Clause::EQUAL, second_position, first_entity, property_called("Position"), Clause::EQUAL, first_position)
+          game.create_rule(second_entity, property_called("Position"), Clause::NOT_EQUAL, second_position, first_entity, property_called("Position"), Clause::NOT_EQUAL, first_position)
+          game.create_rule(first_entity, property_called("Position"), Clause::EQUAL, first_position, second_entity, property_called("Position"), Clause::EQUAL, second_position)
+          game.create_rule(first_entity, property_called("Position"), Clause::NOT_EQUAL, first_position, second_entity, property_called("Position"), Clause::NOT_EQUAL, second_position)
+        end
+      end
+    end
+    
   end
 end

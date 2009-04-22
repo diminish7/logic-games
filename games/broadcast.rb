@@ -27,46 +27,7 @@ puts game.readable
 #Create the rules and facts
 
 #Rules and facts for "L must be played immediately before O"
-#Facts: 
-# - O cannot be in position 1
-# - L cannot be in position 7
-LOGGER.info "Adding rules and facts for 'L must be played immediately before O"
-[["O", 1], ["L", 7]].each do |entity_name, position|
-  game.create_fact(game.entities[entity_name], property_called("Position"), Fact::NOT_EQUAL, position)
-end
-
-#Rules:
-# - if O is in position 2 then L is in position 1
-# - if O is in position 3 then L is in position 2
-# - if O is in position 4 then L is in position 3
-# - if O is in position 5 then L is in position 4
-# - if O is in position 6 then L is in position 5
-# - if O is in position 7 then L is in position 6
-# - if L is in position 1 then O is in position 2
-# - if L is in position 2 then O is in position 3
-# - if L is in position 3 then O is in position 4
-# - if L is in position 4 then O is in position 5
-# - if L is in position 5 then O is in position 6
-# - if L is in position 6 then O is in position 7
-# - if L is not in position 1 then O is not in position 2
-# - if L is not in position 2 then O is not in position 3
-# - if L is not in position 3 then O is not in position 4
-# - if L is not in position 4 then O is not in position 5
-# - if L is not in position 5 then O is not in position 6
-# - if L is not in position 6 then O is not in position 7
-# - if O is not in position 2 then L is not in position 1
-# - if O is not in position 3 then L is not in position 2
-# - if O is not in position 4 then L is not in position 3
-# - if O is not in position 5 then L is not in position 4
-# - if O is not in position 6 then L is not in position 5
-# - if O is not in position 7 then L is not in position 6
-6.times do |i|
-  game.create_rule(game.entities["O"], property_called("Position"), Clause::EQUAL, (i+2), game.entities["L"], property_called("Position"), Clause::EQUAL, (i+1))
-  game.create_rule(game.entities["O"], property_called("Position"), Clause::NOT_EQUAL, (i+2), game.entities["L"], property_called("Position"), Clause::NOT_EQUAL, (i+1))
-  game.create_rule(game.entities["L"], property_called("Position"), Clause::EQUAL, (i+1), game.entities["O"], property_called("Position"), Clause::EQUAL, (i+2))
-  game.create_rule(game.entities["L"], property_called("Position"), Clause::NOT_EQUAL, (i+1), game.entities["O"], property_called("Position"), Clause::NOT_EQUAL, (i+2))
-end
-
+new_rule "L", :before, "O", 1
   
 #Rules and facts for "The news tape must be played at some time after L"
 #Fact: 

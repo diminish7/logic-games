@@ -116,38 +116,7 @@ end
 end
 
 #Rules and Facts for "Steve's lesson is exactly three days after Grace's lesson"
-#Fact:
-# - Steve is not in position 1, 2 or 3
-# - Grace is not in position 4, 5, or 6
-LOGGER.info "Adding rules and facts for \"Steve's lesson is exactly three days after Grace's lesson\""
-{"Steve" => [1, 2, 3], "Grace" => [4, 5, 6]}.each do |entity_name, positions|
-  positions.each do |position|
-    game.create_fact(game.entities[entity_name], property_called("Position"), Fact::NOT_EQUAL, position)
-  end
-end
-#Rules:
-# - if Steve is in position 4 then Grace is in position 1
-# - if Steve is in position 5 then Grace is in position 2
-# - if Steve is in position 6 then Grace is in position 3
-# - if Steve is NOT in position 4 then Grace is NOT in position 1
-# - if Steve is NOT in position 5 then Grace is NOT in position 2
-# - if Steve is NOT in position 6 then Grace is NOT in position 3
-# - if Grace is in position 1 then Steve is in position 4
-# - if Grace is in position 2 then Steve is in position 5
-# - if Grace is in position 3 then Steve is in position 6
-# - if Grace is NOT in position 1 then Steve is NOT in position 4
-# - if Grace is NOT in position 2 then Steve is NOT in position 5
-# - if Grace is NOT in position 3 then Steve is NOT in position 6
-#Rules for Steve
-4.upto(6) do |position|
-  game.create_rule(game.entities["Steve"], property_called("Position"), Clause::EQUAL, position, game.entities["Grace"], property_called("Position"), Clause::EQUAL, (position-3))
-  game.create_rule(game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, position, game.entities["Grace"], property_called("Position"), Clause::NOT_EQUAL, (position-3))
-end
-#Rules for Grace
-1.upto(3) do |position|
-  game.create_rule(game.entities["Grace"], property_called("Position"), Clause::EQUAL, position, game.entities["Steve"], property_called("Position"), Clause::EQUAL, (position+3))
-  game.create_rule(game.entities["Grace"], property_called("Position"), Clause::NOT_EQUAL, position, game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, (position+3))
-end
+new_rule "Steve", :after, "Grace", 3
 
 #Rules and Facts for the combination of the two Steve rules above:
 #Fact: 
