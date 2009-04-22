@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), "../language/position")
+include Language::Position
 
 #Set up game description
 new_game
