@@ -32,36 +32,8 @@ class PianoInstructor
     
     #Create the rules and facts
     
-    #Rules and facts for "Henry's lesson is later in the schedule than Janet's"
-    #Facts: 
-    # - Henry cannot be in position 1
-    # - Janet cannot be in position 6
-    LOGGER.info "Adding rules and facts for \"Henry's lesson is later in the schedule than Janet's\""
-    [["Henry", 1], ["Janet", 6]].each do |entity_name, position|
-      game.create_fact(game.entities[entity_name], property_called("Position"), Fact::NOT_EQUAL, position)
-    end
-    
-    #Rules:
-    # - if Henry is in position 2 then Janet is in position 1
-    # - if Henry is in position 3 then Janet is NOT in positions 4, 5, or 6
-    # - if Henry is in position 4 then Janet is NOT in positions 5 or 6
-    # - if Henry is in position 5 then Janet is NOT in position 6
-    # - if Janet is in position 2 then Henry is NOT in position 1
-    # - if Janet is in position 3 then Henry is NOT in positions 1 or 2
-    # - if Janet is in position 4 then Henry is NOT in positions 1, 2 or 3
-    # - if Janet is in position 5 then Henry is in position 6
-    #Simple rules
-    game.create_rule(game.entities["Henry"], property_called("Position"), Clause::EQUAL, 2, game.entities["Janet"], property_called("Position"), Clause::EQUAL, 1)
-    game.create_rule(game.entities["Janet"], property_called("Position"), Clause::EQUAL, 5, game.entities["Henry"], property_called("Position"), Clause::EQUAL, 6)
-    #Rules for Henry
-    {3 => [4, 5, 6], 4 => [5, 6], 5 => [6]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Henry"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Janet"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    #Rules for Janet
-    {2 => [1], 3 => [1, 2], 4 => [1, 2, 3]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Janet"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Henry"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    
+    #Henry's lesson is later in the schedule than Janet's
+    new_rule "Henry", :after, "Janet"
       
     #Rules and facts for "Una's lesson is later in the schedule than Steve's lesson"
     #Facts: 

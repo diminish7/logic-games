@@ -31,44 +31,22 @@ class Broadcast
     
     #Create the rules and facts
     
-    #Rules and facts for "L must be played immediately before O"
+    #L must be played immediately before O
     new_rule "L", :before, "O", 1
-      
-    #Rules and facts for "The news tape must be played at some time after L"
+    #The news tape must be played at some time after L
+    new_rule "News", :after, "L"
+    
+    #Additional implied rules (TODO)
     #Fact: 
-    # - News cannot be in position 1
     # - News cannot be in position 2 (because of the relationship of L and O)
-    # - L cannot be in position 7 (which we already know from above...)
     # - L cannot be in position 6 (because of the relationship of L and O)
-    LOGGER.info "Adding rules and facts for 'The news tape must be played at some time after L"
-    game.create_fact(game.entities["News"], property_called("Position"), Fact::NOT_EQUAL, 1)
     game.create_fact(game.entities["News"], property_called("Position"), Fact::NOT_EQUAL, 2)
     game.create_fact(game.entities["L"], property_called("Position"), Fact::NOT_EQUAL, 6)
-    
     #Rules: 
     # - if News is in position 3 then L is in position 1
-    # - if News is in position 4 then L is NOT in positions 3, 5, 6, or 7
-    # - if News is in position 5 then L is NOT in positions 4, 6 or 7
-    # - if News is in position 6 then L is NOT in position 5, or 7
-    # - if L is in position 2 then News is NOT in position 1 or 3
-    # - if L is in position 3 then News is NOT in position 1, 2 or 4
-    # - if L is in position 4 then News is NOT in position 1, 2, 3, or 5
     # - if L is in position 5 then News is in position 7
-    #Note: these rules will be tricky to automate: because News is after L, but O is immediately after L, News must be at least two after L
-    # - if News is in 
-    news = game.entities["News"]
-    l = game.entities["L"]
-    #Simple rules
-    game.create_rule(news, property_called("Position"), Clause::EQUAL, 3, l, property_called("Position"), Clause::EQUAL, 1)
-    game.create_rule(l, property_called("Position"), Clause::EQUAL, 5, news, property_called("Position"), Clause::EQUAL, 7)
-    #Rules for News
-    {4 => [3, 5, 6, 7], 5 => [4, 6, 7], 6 => [5, 7]}.each do |antecedant_value, consequent_values|
-      game.create_rule(news, property_called("Position"), Clause::EQUAL, antecedant_value, l, property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    #Rules for L
-    {2 => [1, 3], 3 => [1, 2, 4], 4 => [1, 2, 3, 5]}.each do |antecedant_value, consequent_values|
-      game.create_rule(l, property_called("Position"), Clause::EQUAL, antecedant_value, news, property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
+    game.create_rule(game.entities["News"], property_called("Position"), Clause::EQUAL, 3, game.entities["L"], property_called("Position"), Clause::EQUAL, 1)
+    game.create_rule(game.entities["L"], property_called("Position"), Clause::EQUAL, 5, game.entities["News"], property_called("Position"), Clause::EQUAL, 7)
     
     #Rules and facts for "There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
     #Facts: None

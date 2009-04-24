@@ -44,8 +44,28 @@ module Language
       first_entity = entity_called(first_entity) if first_entity.kind_of?(String)
       second_entity = entity_called(second_entity) if second_entity.kind_of?(String)
       if distance.nil?
-        #TODO
-        
+        # Facts
+        #   - first entity can't be in the last position
+        #   - second_entity can't be in the first position
+        game.create_fact(first_entity, property_called("Position"), Fact::NOT_EQUAL, positions.length)
+        game.create_fact(second_entity, property_called("Position"), Fact::NOT_EQUAL, 1)
+        # Rules
+        #   - If first entity is in the second to last position, second entity is in the last position
+        #   - If second entity is in position 2, first entity is in position 1
+        #   - For positions 2 up to the third to last position, if first entity is in that position, then second entity is NOT in position 1 up to position-1
+        #   - For positions 3 up to the second to last position, if second entity is in that position, the first entity is NOT in position+1 up to last position
+        game.create_rule(first_entity, property_called("Position"), Clause::EQUAL, (positions.length-1), second_entity, property_called("Position"), Clause::EQUAL, positions.length)
+        game.create_rule(second_entity, property_called("Position"), Clause::EQUAL, 2, first_entity, property_called("Position"), Clause::EQUAL, 1)
+        2.upto(positions.length-2) do |first_position|
+          1.upto(first_position-1) do |second_position|
+            game.create_rule(first_entity, property_called("Position"), Clause::EQUAL, first_position, second_entity, property_called("Position"), Clause::NOT_EQUAL, second_position)
+          end
+        end
+        3.upto(positions.length-1) do |second_position|
+          (second_position+1).upto(positions.length) do |first_position|
+            game.create_rule(second_entity, property_called("Position"), Clause::EQUAL, second_position, first_entity, property_called("Position"), Clause::NOT_EQUAL, first_position)
+          end
+        end
       else
         # Facts:
         #   - second entity can't be in positions 1 through distance
