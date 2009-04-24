@@ -1,6 +1,9 @@
 require File.join(File.dirname(__FILE__), "../language/position")
+require File.join(File.dirname(__FILE__), "game_helpers")
+
 class Broadcast
   include Language::Position
+  include Helpers
   
   def initialize
     #Set up game description
