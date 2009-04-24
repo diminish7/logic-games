@@ -5,6 +5,9 @@ module Language
     def game
       @game
     end
+    def answers
+      @answers ||= {}
+    end
     #Keep track of the last referenced class for ambiguous verbs
     def last_referenced
       @last_referenced || @game
@@ -144,6 +147,15 @@ module Language
       define_method(method) do |*args|
         @last_called = method
         @last_referenced = self.send(new_name, *args)
+      end
+    end
+    
+    def display_answers
+      answers.each do |question, answer|
+        puts "Question:"
+        puts "#{question.readable}"
+        puts "Answer"
+        puts answer ? answer.readable : "Unknown"
       end
     end
   end
