@@ -48,7 +48,7 @@ class Broadcast
     game.create_rule(game.entities["News"], property_called("Position"), Clause::EQUAL, 3, game.entities["L"], property_called("Position"), Clause::EQUAL, 1)
     game.create_rule(game.entities["L"], property_called("Position"), Clause::EQUAL, 5, game.entities["News"], property_called("Position"), Clause::EQUAL, 7)
     
-    #Rules and facts for "There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
+    #There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
     new_rule "G", :separated_by, "P", 2
     
     #Generate whatever facts we can
