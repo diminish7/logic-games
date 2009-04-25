@@ -27,9 +27,9 @@ class Broadcast
     determines ["News", "H", "L", "O", "S"], "Position", :is, 3
     
     #Display game
-    puts game.readable
+    display_game
     
-    #Create the rules and facts
+    #Create the rules and facts:
     
     #L must be played immediately before O
     new_rule "L", :before, "O", 1
@@ -49,64 +49,10 @@ class Broadcast
     game.create_rule(game.entities["L"], property_called("Position"), Clause::EQUAL, 5, game.entities["News"], property_called("Position"), Clause::EQUAL, 7)
     
     #Rules and facts for "There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
-    #Facts: None
-    #Rules:
-    # - if G is in position 1 then P is in position 4
-    # - if G is in position 2 then P is in position 5
-    # - if G is in position 3 then P is in position 6
-    # - if G is in position 4 then P is NOT in positions 2, 3, 5, or 6
-    # - if G is in position 5 then P is in position 2
-    # - if G is in position 6 then P is in position 3
-    # - if G is in position 7 then P is in position 4
-    # - if P is in position 1 then G is in position 4
-    # - if P is in position 2 then G is in position 5
-    # - if P is in position 3 then G is in position 6
-    # - if P is in position 4 then G is NOT in positions 2, 3, 5, or 6
-    # - if P is in position 5 then G is in position 2
-    # - if P is in position 6 then G is in position 3
-    # - if P is in position 7 then G is in position 4
-    # - if G is not in position 1 then P is not in position 4
-    # - if G is not in position 2 then P is not in position 5
-    # - if G is not in position 3 then P is not in position 6
-    # - if G is not in position 4 then P is not in positions 1 or 7
-    # - if G is not in position 5 then P is not in position 2
-    # - if G is not in position 6 then P is not in position 3
-    # - if G is not in position 7 then P is not in position 4
-    # - if P is not in position 1 then G is not in position 4
-    # - if P is not in position 2 then G is not in position 5
-    # - if P is not in position 3 then G is not in position 6
-    # - if P is not in position 4 then G is not in positions 1 or 7
-    # - if P is not in position 5 then G is not in position 2
-    # - if P is not in position 6 then G is not in position 3
-    # - if P is not in position 7 then G is not in position 4
-    
-    LOGGER.info "Adding rules and facts for 'There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P'"
-    {"G" => "P", "P" => "G"}.each do |name1, name2|
-      entity1 = game.entities[name1]
-      entity2 = game.entities[name2]
-      #Add the EQUALS rules
-      {1 => 4, 2 => 5, 3 => 6, 5 => 2, 6 => 3, 7 => 4}.each do |antecedent_value, consequent_value|
-        game.create_rule(entity1, property_called("Position"), Clause::EQUAL, antecedent_value, entity2, property_called("Position"), Clause::EQUAL, consequent_value)
-        game.create_rule(entity1, property_called("Position"), Clause::NOT_EQUAL, antecedent_value, entity2, property_called("Position"), Clause::NOT_EQUAL, consequent_value)
-      end
-      #Add the NOT_EQUALS rules
-      [2, 3, 5, 6].each do |consequent_value|
-        game.create_rule(entity1, property_called("Position"), Clause::EQUAL, 4, entity2, property_called("Position"), Clause::NOT_EQUAL, consequent_value)
-      end
-      [1, 7].each do |consequent_value|
-        game.create_rule(entity1, property_called("Position"), Clause::NOT_EQUAL, 4, entity2, property_called("Position"), Clause::NOT_EQUAL, consequent_value)
-      end
-      
-    end
+    new_rule "G", :separated_by, "P", 2
     
     #Generate whatever facts we can
-    game.rule_base.evaluate
-    
-    #Now evaluate the questions
-    game.questions.each do |question|
-      LOGGER.info "Evaluating question #{question.readable}"
-      answers[question] = question.evaluate
-    end
+    evaluate
     
   end
   

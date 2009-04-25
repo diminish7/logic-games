@@ -28,71 +28,17 @@ class PianoInstructor
     determines ["Grace", "Henry", "Steve", "Tom", "Una"], "Position", :is, 6
     
     #Display game
-    puts game.readable
+    display_game
     
     #Create the rules and facts
     
     #Henry's lesson is later in the schedule than Janet's
     new_rule "Henry", :after, "Janet"
       
-    #Rules and facts for "Una's lesson is later in the schedule than Steve's lesson"
-    #Facts: 
-    # - Una cannot be in position 1
-    # - Steve cannot be in position 6
-    LOGGER.info "Adding rules and facts for \"Una's lesson is later in the schedule than Steve's\""
-    [["Una", 1], ["Steve", 6]].each do |entity_name, position|
-      game.create_fact(game.entities[entity_name], property_called("Position"), Fact::NOT_EQUAL, position)
-    end
+    #Una's lesson is later in the schedule than Steve's lesson
+    new_rule "Una", :after, "Steve"
     
-    #Rules:
-    # - if Una is in position 2 then Steve is in position 1
-    # - if Una is in position 3 then Steve is NOT in positions 4, 5, or 6
-    # - if Una is in position 4 then Steve is NOT in positions 5 or 6
-    # - if Una is in position 5 then Steve is NOT in position 6
-    # - If Una is NOT in position 6 the Steve is NOT in positions 5 or 6
-    # - if Una is NOT in positions 5 or 6 then Steve is NOT in positions 4, 5, or 6
-    # - if Una is NOT in positions 4, 5 or 6, then Steve is NOT in positions 3, 4, 5 or 6
-    # - if Una is NOT in positions 3, 4, 5 or 6 then Steve is NOT in positions 2, 3, 4, 5 or 6
-    # - if Steve is in position 2 then Una is NOT in position 1
-    # - if Steve is in position 3 then Una is NOT in positions 1 or 2
-    # - if Steve is in position 4 then Una is NOT in positions 1, 2 or 3
-    # - if Steve is in position 5 then Una is in position 6
-    # - if Steve is NOT in positions 1, then Una is NOT in position 1 or 2
-    # - if Steve is NOT in positions 1 or 2, then Una is NOT in positions 1, 2, or 3
-    # - if Steve is NOT in positions 1, 2 or 3, then Una is NOT in positions 1, 2, 3 or 4
-    # - if Steve is NOT in positions 1, 2, 3, or 4, then Una is NOT in positions 1, 2, 3, 4 or 5
-    #####
-    #Simple rules
-    game.create_rule(game.entities["Una"], property_called("Position"), Clause::EQUAL, 2, game.entities["Steve"], property_called("Position"), Clause::EQUAL, 1)
-    game.create_rule(game.entities["Steve"], property_called("Position"), Clause::EQUAL, 5, game.entities["Una"], property_called("Position"), Clause::EQUAL, 6)
-    #Rules for Una
-    {3 => [4, 5, 6], 4 => [5, 6], 5 => [6]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Una"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    #Complex rules for Una
-    [5, 6].each do |position|
-      game.create_rule(game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, 6, game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, position)
-    end
-    {[5, 6] => [4, 5, 6], [4, 5, 6] => [3, 4, 5, 6], [3, 4, 5, 6] => [2, 3, 4, 5, 6]}.each do |antecedent_values, consequent_values|
-      consequent_values.each do |consequent_value|
-        game.create_compound_rule(game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, antecedent_values, ClauseCluster::AND, game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, consequent_value)
-      end
-    end
-    #Rules for Steve
-    {2 => [1], 3 => [1, 2], 4 => [1, 2, 3]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Steve"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    #Complex Rules for Steve
-    [1, 2].each do |position|
-      game.create_rule(game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, 1, game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, position)
-    end
-    {[1, 2] => [1, 2, 3], [1, 2, 3] => [1, 2, 3, 4], [1, 2, 3, 4] => [1, 2, 3, 4, 5]}.each do |antecedent_values, consequent_values|
-      consequent_values.each do |consequent_value|
-        game.create_compound_rule(game.entities["Steve"], property_called("Position"), Clause::NOT_EQUAL, antecedent_values, ClauseCluster::AND, game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, consequent_value)
-      end
-    end
-    
-    #Rules and Facts for "Steve's lesson is exactly three days after Grace's lesson"
+    #Steve's lesson is exactly three days after Grace's lesson
     new_rule "Steve", :after, "Grace", 3
     
     #Rules and Facts for the combination of the two Steve rules above:
@@ -123,26 +69,11 @@ class PianoInstructor
       game.create_rule(game.entities["Grace"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
     end
     
-    #Rules and Facts for "Janet's lesson is on the first day or else on the third day"
-    #Facts:
-    # - Janet is not in position 2
-    # - Janet is not in position 4
-    # - Janet is not in position 5
-    # - Janet is not in position 6
-    LOGGER.info "Adding rules and facts for \"Janet's lesson is on the first day or else on the third day\""
-    [2, 4, 5, 6].each do |position|
-      game.create_fact(game.entities["Janet"], property_called("Position"), Fact::NOT_EQUAL, position)
-    end
-    #Rules: None
+    #Janet's lesson is on the first day or else on the third day
+    new_rule "Janet", :in_position, [1, 3]
     
-    #Generate whatever facts we can
-    game.rule_base.evaluate
+    evaluate
     
-    #Now evaluate the questions
-    game.questions.each do |question|
-      LOGGER.info "Evaluating question #{question.readable}"
-      answers[question] = question.evaluate
-    end
   end
   
 end
