@@ -42,8 +42,9 @@ module Language
       order_rules.each do |entity, rules|
         next unless rules.length > 1  #Only checking combinations of rules
         if (specific_rule = rules.find { |r| r[:distance] != nil }) && (general_rule = rules.find { |r| r[:distance] == nil })
+          distance = specific_rule[:distance]
           if specific_rule[:first_entity] == general_rule[:first_entity]
-            if specific_rule[:distance] == 1
+            if distance == 1
               #Facts:
               # specific_rule[:first_entity] can't be in the second-to-last position
               # general_rule[:second_entity] can't be in second position
@@ -62,7 +63,38 @@ module Language
           elsif specific_rule[:first_entity] == general_rule[:second_entity]
             #TODO
           elsif specific_rule[:second_entity] == general_rule[:first_entity]
-            #TODO: this applies to Grace, Steve and Una
+            #Facts:
+            # general_rule[:second_entity] is not in positions 1 through distance+1
+            # specific_rule[:first_entity] is not in positions last downto last-distance
+            general_second = entity_called(general_rule[:second_entity])
+            1.upto(distance+1) do |position|
+              game.create_fact(general_second, position_property, Fact::NOT_EQUAL, position)
+            end
+            specific_first = entity_called(specific_rule[:first_entity])
+            positions.length.downto(positions.length-(distance)) do |position|
+              game.create_fact(specific_first, position_property, Fact::NOT_EQUAL, position)
+            end
+            #Rules:
+            # if general_rule[:second_entity] is in position distance+1, specific_rule[:first_entity] is in position 1 
+            # if specific_rule[:first_entity] is in positions positions-distance, general_rule[:second_entity] is in the last position
+            # for positions distance+2 upto last
+            #     if general_rule[:second_entity] is in that position, specific_rule[:first] can't be in position-1 downto position-distance+1
+            #     or any position above position
+            # for positions 1 upto distance-1
+            #     if specific_rule[:first_entity] is in that position, general_rule[:second] can't be in position+1 upto position+distance-1
+            #     or any position below position
+            game.create_rule(general_second, position_property, Clause::EQUAL, distance+1, specific_first, position_property, Clause::EQUAL, 1)
+            game.create_rule(specific_first, position_property, Clause::EQUAL, positions.length-distance, general_second, position_property, Clause::EQUAL, positions.length)
+            (distance+2).upto(positions.length) do |position1|
+              (((position1-distance+1)..(position1-1)).to_a + ((position1+1)..positions.length).to_a).each do |position2|
+                game.create_rule(general_second, position_property, Clause::EQUAL, position1, specific_first, position_property, Clause::NOT_EQUAL, position2)
+              end
+            end
+            1.upto(distance-1) do |position1|
+              (((position1+1)..(position1+distance-1)).to_a + (1..(position1-1)).to_a).each do |position2|
+                game.create_rule(specific_first, position_property, Clause::EQUAL, position1, general_second, position_property, Clause::NOT_EQUAL, position2)
+              end
+            end
           end
         end
       end

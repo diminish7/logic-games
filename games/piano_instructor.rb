@@ -41,34 +41,6 @@ class PianoInstructor
     #Steve's lesson is exactly three days after Grace's lesson
     new_rule "Steve", :after, "Grace", 3
     
-    #Rules and Facts for the combination of the two Steve rules above:
-    #Fact: 
-    # - Una is not in positions 1, 2, 3 or 4
-    # - Grace is NOT in position 3
-    LOGGER.info "Adding rules and facts for combination of rules"
-    [1, 2, 3, 4].each do |position|
-      game.create_fact(game.entities["Una"], property_called("Position"), Fact::NOT_EQUAL, position)
-    end
-    game.create_fact(game.entities["Grace"], property_called("Position"), Fact::NOT_EQUAL, 3)
-    #Rules:
-    #(una is 4 or more positions after grace)
-    # - if Una is in position 4 then Grace is in position 1
-    # - if Una is in position 5 then Gace is NOT in positions 3, 4 or 6
-    # - if Una is in position 6 then Grace is NOT in positions 4 or 5
-    # - if Grace is in position 1 then Una is NOT in positions 2 or 3
-    # - if Grace is in position 2 then Una is NOT in positions 1, 3 or 4
-    # - if Grace is in positions 3 then Una is in position 6
-    game.create_rule(game.entities["Una"], property_called("Position"), Clause::EQUAL, 4, game.entities["Grace"], property_called("Position"), Clause::EQUAL, 1)
-    game.create_rule(game.entities["Grace"], property_called("Position"), Clause::EQUAL, 3, game.entities["Una"], property_called("Position"), Clause::EQUAL, 6)
-    #Rules for Una
-    {5 => [3, 4, 6], 6 => [4, 5]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Una"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Grace"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    #Rules for Grace
-    {1 => [2, 3], 2 => [1, 3, 4]}.each do |antecedant_value, consequent_values|
-      game.create_rule(game.entities["Grace"], property_called("Position"), Clause::EQUAL, antecedant_value, game.entities["Una"], property_called("Position"), Clause::NOT_EQUAL, consequent_values)
-    end
-    
     #Janet's lesson is on the first day or else on the third day
     new_rule "Janet", :in_position, [1, 3]
     
