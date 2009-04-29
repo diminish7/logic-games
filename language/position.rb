@@ -15,6 +15,59 @@ module Language
       start.upto(stop) {|position| @positions << position}
     end
     
+    #Keep track of rules for inferred rules
+    def known_rules
+      @known_rules ||= {}
+    end
+    
+    #Add rule to known_rules
+    def track_rule(type, params)
+      #TODO: Are there other types of rules that can be used inferring?
+      known_rules[type] ||= {}
+      if params[:first_entity]
+        known_rules[type][params[:first_entity]] ||= []
+        known_rules[type][params[:first_entity]] << params
+      end
+      if params[:second_entity]
+        known_rules[type][params[:second_entity]] ||= []
+        known_rules[type][params[:second_entity]] << params
+      end
+    end
+    
+    #Try to infer new rules from existing rules
+    def infer_rules
+      #Try to infer ordering rules (TODO: are there other types of rules that can be used to infer?)
+      order_rules = known_rules[:ordered]
+      #First entity is the same on two rules, and one of the rules has a specific distance
+      order_rules.each do |entity, rules|
+        next unless rules.length > 1  #Only checking combinations of rules
+        if (specific_rule = rules.find { |r| r[:distance] != nil }) && (general_rule = rules.find { |r| r[:distance] == nil })
+          if specific_rule[:first_entity] == general_rule[:first_entity]
+            if specific_rule[:distance] == 1
+              #Facts:
+              # specific_rule[:first_entity] can't be in the second-to-last position
+              # general_rule[:second_entity] can't be in second position
+              first = entity_called(specific_rule[:first_entity])
+              second = entity_called(general_rule[:second_entity])
+              game.create_fact(first, position_property, Fact::NOT_EQUAL, positions.length-1)
+              game.create_fact(second, position_property, Fact::NOT_EQUAL, 2)
+              #Rules:
+              # If specific_rule[:first_entity] is in the 3rd-to-last position, general_rule[:second_entity] is in the last position
+              # If general_rule[:second_entity] is in the 3rd position, specific_rule[:first_entity] is in the first positions
+              game.create_rule(first, position_property, Clause::EQUAL, positions.length-2, second, position_property, Clause::EQUAL, positions.length)
+              game.create_rule(second, position_property, Clause::EQUAL, 3, first, position_property, Clause::EQUAL, 1)
+            else
+              #TODO: Can we infer anything?
+            end
+          elsif specific_rule[:first_entity] == general_rule[:second_entity]
+            #TODO
+          elsif specific_rule[:second_entity] == general_rule[:first_entity]
+            #TODO: this applies to Grace, Steve and Una
+          end
+        end
+      end
+    end
+    
     #Override base's setup_game to add position_specific rules
     def setup_game(property, *entities)
       #Work witht the entity objects, from their names
@@ -64,11 +117,15 @@ module Language
     def ordered_position_rule(first_entity, second_entity, distance = nil)
       first_entity = entity_called(first_entity) if first_entity.kind_of?(String)
       second_entity = entity_called(second_entity) if second_entity.kind_of?(String)
+      #Keep track of rules so we can infer new rules from the combination of rules
+      track_rule(:ordered, {:first_entity => first_entity.name, :second_entity => second_entity.name, :distance => distance})
       if distance.nil?
         general_ordered_position_rule(first_entity, second_entity)
       else
         specific_ordered_position_rule(first_entity, second_entity, distance)
       end
+      #Try to infer new rules from the combinations of rules
+      infer_rules
     end
     
     #Rules where one entity is before another by an unspecified distance

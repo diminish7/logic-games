@@ -36,18 +36,6 @@ class Broadcast
     #The news tape must be played at some time after L
     new_rule "News", :after, "L"
     
-    #Additional implied rules (TODO)
-    #Fact: 
-    # - News cannot be in position 2 (because of the relationship of L and O)
-    # - L cannot be in position 6 (because of the relationship of L and O)
-    game.create_fact(game.entities["News"], property_called("Position"), Fact::NOT_EQUAL, 2)
-    game.create_fact(game.entities["L"], property_called("Position"), Fact::NOT_EQUAL, 6)
-    #Rules: 
-    # - if News is in position 3 then L is in position 1
-    # - if L is in position 5 then News is in position 7
-    game.create_rule(game.entities["News"], property_called("Position"), Clause::EQUAL, 3, game.entities["L"], property_called("Position"), Clause::EQUAL, 1)
-    game.create_rule(game.entities["L"], property_called("Position"), Clause::EQUAL, 5, game.entities["News"], property_called("Position"), Clause::EQUAL, 7)
-    
     #There must be exactly two time slots between G and P, regardless of whether G comes before P or whether G comes after P
     new_rule "G", :separated_by, "P", 2
     
